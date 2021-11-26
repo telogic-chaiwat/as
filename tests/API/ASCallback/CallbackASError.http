@@ -1,0 +1,17 @@
+POST http://localhost:3000/as/error HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYWQ1MjFlYTJiYmM2MTRjN2EwNjZlNSIsImtpbmQiOiJhY2Nlc3NfdG9rZW4iLCJpYXQiOjE2MzAxMzU4MzUsImV4cCI6MTYzMDIyMjIzNX0.QJ-v4gV912lZe3ONetRtRAgbO2kBy3IRZrAHFYopftU
+
+{
+  "request_id": "6a40df95c0ad40e9fe83a485c2b13b64992093761420b48bb3f576930ad89a85",
+  "node_id": "894CFA85-2AC5-4758-A86B-3E12B88F17DF",
+  "type": "error",
+  "action": "string",
+  "error": {
+    "code": 0,
+    "message": "string"
+  }
+}
+
+###
+GET http://localhost:9092/flushStat HTTP/1.1

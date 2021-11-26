@@ -1,0 +1,38 @@
+{
+    "routing": {
+        "authorization": [{
+            "ctrl_name": "getToken",
+            "method": ["post"],
+            "url": ["/authorization/v1/getToken"]
+        }, {
+            "ctrl_name": "refreshToken",
+            "method": ["post"],
+            "url": ["/authorization/v1/refreshToken"]
+        }],
+        "ASCallback" : [
+            {
+                "ctrl_name": "callbackASService",
+                "method": ["post"],
+                "url": ["/service/:service_id"]
+            },
+            {
+                "ctrl_name": "callbackASData",
+                "method": ["post"],
+                "url": ["/as/data"]
+            },
+            {
+                "ctrl_name": "callbackASRequestStatusUpdate",
+                "method": ["post"],
+                "url": ["/as/request_status_update"]
+            },
+            {
+                "ctrl_name": "callbackASError",
+                "method": ["post"],
+                "url": ["/as/error"]
+            }
+        ]
+        
+    },
+
+    "jwtSecretKey" : "k9OT6RO230Fu6qY6lpdipU0DO6awIex9"
+}

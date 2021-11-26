@@ -1,0 +1,56 @@
+POST http://localhost:3000/as/request_status_update HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYWQ1MjFlYTJiYmM2MTRjN2EwNjZlNSIsImtpbmQiOiJhY2Nlc3NfdG9rZW4iLCJpYXQiOjE2MzAxMzU4MzUsImV4cCI6MTYzMDIyMjIzNX0.QJ-v4gV912lZe3ONetRtRAgbO2kBy3IRZrAHFYopftU
+
+{
+  "request_id": "6a40df95c0ad40e9fe83a485c2b13b64992093761420b48bb3f576930ad89a85",
+  "node_id": "894CFA85-2AC5-4758-A86B-3E12B88F17DF",
+  "type": "request_status",
+  "requester_node_id": "string",
+  "mode": 1,
+  "request_message_hash": "string",
+  "min_ial": 1.1,
+  "min_aal": 1,
+  "min_idp": 0,
+  "idp_id_list": [
+    "string"
+  ],
+  "response_list": [
+    {
+      "ial": 1.1,
+      "aal": 1,
+      "status": "accept",
+      "error_code": 0,
+      "signature": "string",
+      "idp_id": "string",
+      "valid_signature": true,
+      "valid_ial": true
+    }
+  ],
+  "data_request_list": [
+    {
+      "service_id": "string",
+      "as_id_list": [
+        "string"
+      ],
+      "min_as": 0,
+      "request_params_hash": "string",
+      "response_list": [
+        {
+          "as_id": "string",
+          "signed": true,
+          "received_data": true,
+          "error_code": 0
+        }
+      ]
+    }
+  ],
+  "request_timeout": 0,
+  "closed": true,
+  "timed_out": true,
+  "status": "pending",
+  "block_height": "string"
+}
+
+###
+GET http://localhost:9092/flushStat HTTP/1.1

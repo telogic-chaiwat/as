@@ -1,0 +1,26 @@
+POST http://localhost:3000/service/900.cust_info_Dipchip_001 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxMmYyOWM0MjRkZGI4ODE5OTFjMGI2MCIsImtpbmQiOiJhY2Nlc3NfdG9rZW4iLCJpYXQiOjE2MzA3NzQ5NDUsImV4cCI6MTYzMDg2MTM0NX0.3hcKAxnGxHGa6cpF19x_gpo5X8Ax6XOkBJY_wUu1JY0
+
+{
+"node_id": "894CFA85-2AC5-4758-A86B-3E12B88F17DF",
+  "type": "data_request",
+  "request_id": "1b50uu97c0assfefmi46720d40e9fedd83a485c2b1a3b64992093761420b48bb3f576930ad89a85c95600",
+  "mode": 3,
+  "namespace": "citizen_id",
+  "identifier": "1309913659936",
+  "service_id": "900.cust_info_Dipchip_001",
+  "request_params": "{\"type\":\"pdf\"}",
+  "requester_node_id": "17DB668C-155C-4D90-843D-ADAE12D779CC",
+  "response_signature_list": [
+    "YmFzZTY0X3N0cmluZw=="
+  ],
+  "max_ial": 2.2,
+  "max_aal": 2.2,
+  "creation_time": 1533315873764,
+  "creation_block_height": "A02:179791",
+  "request_timeout": 600 
+}
+
+###
+GET http://localhost:9092/flushStat HTTP/1.1

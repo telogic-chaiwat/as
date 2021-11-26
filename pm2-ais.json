@@ -1,0 +1,291 @@
+{
+    "apps": [
+        {
+            "exec_mode": "fork",
+            "instances": 1,
+            "script": "index.js",
+            "name": "ASBE-V1",
+            "interpreter": "node",
+            "env": {
+                "server": {
+                    "cert": "./cert/server.crt",
+                    "key": "./cert/server.key",
+                    "use_https": true,
+                    "app_port": "3000",
+                    "app_host": "0.0.0.0",
+                    "health_check_url": [
+                        "/healthcheck"
+                    ]
+                },
+                "service": {
+                    "node_be": {
+                        "default": {
+                            "conn_type": "http",
+                            "ip": "0.0.0.0",
+                            "port": "3000",
+                            "path": "/",
+                            "max_retry": 3,
+                            "timeout": 3,
+                            "retry_condition": "TIMEOUT|CONNECTION_ERROR"
+                        },
+                        "example": {
+                            "path": "/example2"
+                        },
+                        "examplePassingSubUrl": {
+                            "path": "/example2/:subUrlFoo1/:subUrlFoo2"
+                        }
+                    },
+                    "mongo": {
+			"default": {
+                            "conn_type": "mongodb",
+                            "ip": "cosmos-publicidp-az-asse-dev-001.mongo.cosmos.azure.com",
+                            "port": "10255",
+                            "db": "cosmos-publicidp-az-asse-dev-001-db01",
+                            "max_retry": 0,
+                            "timeout": 4,
+                            "retry_condition": "CONNECTION_ERROR",
+                            "connection_string": {
+                                    "ssl" : true,
+                                    "retryWrites" : false,
+                                    "maxIdleTimeMS" : 120000,
+                                    "appName" : "@cosmos-publicidp-az-asse-dev-001@",
+                                    "replicaSet" : "globaldb"
+                            },
+                            "auth" : {
+                                    "user" : "cosmos-publicidp-az-asse-dev-001",
+                                    "pwd" : "oxaxDSTHgRs2BoqXx0AvG5WBx3VnrrsdrauaB1eRz3AOwv2sXsPOo1gskQfLvY3nDGSzdMzr8HQbn3wk4eTjZg=="
+                            }
+                        }
+                    },
+                    "ndid" : {
+                        "idp_send_response_to_ndid" :{
+                            "conn_type": "https",
+                            "ip": "10.144.9.196",
+                            "port": "8080",
+                            "path": "/idp/response",
+                            "max_retry": 3,
+                            "timeout": 3,
+                            "retry_condition":"TIMEOUT|CONNECTION_ERROR",
+                            "signature" : "test",
+                            "ca-cert" : null,
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            }
+                            
+                        },
+                        "idp_send_error_response_to_ndid" :{
+                            "conn_type": "https",
+                            "ip": "10.144.9.196",
+                            "port": "8080",
+                            "path": "/idp/error_response",
+                            "max_retry": 3,
+                            "timeout": 10,
+                            "retry_condition":"TIMEOUT|CONNECTION_ERROR",
+                            "ca-cert" : null,
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            }
+                            
+                        },
+                        "ndid_utility_nodes" :{
+                            "conn_type": "https",
+                            "ip": "10.144.9.196",
+                            "port": "8080",
+                            "path": "/utility/nodes/",
+                            "max_retry": 0,
+                            "timeout": 3,
+                            "retry_condition":"TIMEOUT|CONNECTION_ERROR",
+                            "ca-cert" : null,
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            }
+                        },
+                        "ndid_sign" :{
+                            "conn_type": "https",
+                            "ip": "10.144.9.196",
+                            "port": "8080",
+                            "path": "/sign",
+                            "max_retry": 0,
+                            "timeout": 3,
+                            "retry_condition":"TIMEOUT|CONNECTION_ERROR",
+                            "hash_method" : "SHA256",
+                            "key_type" : "RSA",
+                            "sign_method" : "RSA-SHA256",
+                            "ca-cert" : null,
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            }
+                        }
+                    },
+                    "as" : {
+			"as_send_data_to_ndid": {
+				"conn_type": "https",
+				"ip": "10.144.9.196",
+				"port": "8081",
+				"path": "/as/data/:request_id/:service_id",
+				"max_retry": 0,
+				"timeout": 1,
+                            "retry_condition": "TIMEOUT|CONNECTION_ERROR",
+                            "ca-cert" : null,
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            }
+                        }
+                    },
+                    "enroll" :{
+                        "get_token" : {
+                            "conn_type" : "https",
+                            "ip" : "10.144.9.196",
+                            "port": "9101",
+                            "path" : "/authorization/v1/getToken",
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            },
+                            "name" : "MyChannel",
+                            "pass" : "M!Ch@nne1*"
+
+                        },
+                        "refresh_token" : {
+                            "conn_type" : "https",
+                            "ip" : "10.144.9.196",
+                            "port": "9101",
+                            "path" : "/authorization/v1/refreshToken",
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            }
+                        },
+                        "enrollmentInfoRetrieve" :{
+                            "conn_type" : "https",
+                            "ip" : "10.144.9.196",
+                            "port": "9101",
+                            "path" : "/services/v1/enrollmentInfoRetrieve",
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            } 
+                        }
+                    },
+                    "pidp" :{
+                        "get_token" : {
+                            "conn_type" : "https",
+                            "ip" : "10.144.9.196",
+                            "port": "9102",
+                            "path" : "/authorization/v1/getToken",
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            },
+                            "name" : "MyChannel",
+                            "pass" : "M!Ch@nne1*"
+
+                        },
+                        "refresh_token" : {
+                            "conn_type" : "https",
+                            "ip" : "10.144.9.196",
+                            "port": "9102",
+                            "path" : "/authorization/v1/refreshToken",
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            }
+                        },                   
+                        "identityServiceStatus" :{
+                            "conn_type" : "https",
+                            "ip" : "10.144.9.196",
+                            "port": "9102",
+                            "path" : "/services/v1/identityServiceStatus",
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            } 
+                        }
+                    },
+                    "redis": {
+                        "default": {
+                            "conn_type": "redis",
+                            "host": "127.0.0.1",
+                            "port": "6379",
+                            "max_retry": 0,
+                            "timeout": 5,
+                            "retry_condition": "CONNECTION_ERROR"
+                        }
+                    },
+                    "authFunctions": {
+                        "authUser" : {
+                            "conn_type": "http",
+                            "ip": "localhost",
+                            "port": "9988",
+                            "path": "",
+                            "max_retry": 1,
+                            "timeout": 1,
+                            "retry_condition": "TIMEOUT|CONNECTION_ERROR",
+                            "access_token_exp" :   "86400",
+                            "refresh_token_exp" : "86400"
+                        }
+                    }
+                },
+                "app": {
+                    "example_config_1": "foo",
+                    "example_config_2": {
+                        "foo": "bar"
+                    },
+                    "ip_whitelist_enable" : false
+                },
+                "commonRod": {
+                    "body_parser_limit": "1mb"
+                },
+                "commonLog": {
+                    "projectName": "as",
+                    "log": {
+                        "time": 15,
+                        "path": "./logs/as/appLog/",
+                        "level": "debug",
+                        "console": true,
+                        "file": true
+                    },
+                    "summary": {
+                        "time": 15,
+                        "path": "./logs/as/summary/",
+                        "console": true,
+                        "file": true,
+                        "format": "json"
+                    },
+                    "detail": {
+                        "time": 15,
+                        "path": "./logs/as/detail/",
+                        "console": true,
+                        "file": true,
+                        "rawData": true
+                    },
+                    "stat": {
+                        "time": 15,
+                        "path": "./logs/as/statPath/",
+                        "console": true,
+                        "file": true,
+                        "mode": 1,
+                        "statInterval": 5,
+                        "flush": true
+                    }
+                }
+            }
+        }
+    ]
+}

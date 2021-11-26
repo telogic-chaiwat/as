@@ -1,0 +1,6 @@
+POST http://localhost:3000/authorization/v1/getToken HTTP/1.1
+authorization: Basic TXlDaGFubmVsOk0hQ2hAbm5lMSo=
+content-length: 0
+
+{
+}
