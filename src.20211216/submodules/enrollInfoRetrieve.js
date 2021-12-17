@@ -44,7 +44,7 @@ module.exports.enrollInfoRetrieve = async function(data) {
   Object.assign(optionAttribut,
       {httpsAgent: createHttpsAgent(service, node)});
 
-  let response = await this.utils().http().request(optionAttribut);
+  const response = await this.utils().http().request(optionAttribut);
 
   if (this.utils().http().isError(response)) {
     // await returnError(status.SYSTEM_ERROR);
@@ -56,7 +56,7 @@ module.exports.enrollInfoRetrieve = async function(data) {
           node+' error system');
     this.summary().addErrorBlock(service, node,
         response.status, 'unauthorized');
-    response = await sendGetToken(service, response,
+    await sendGetToken(service, response,
         optionAttribut);
   }
 

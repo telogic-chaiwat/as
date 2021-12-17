@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
-module.exports.validateHeader = async function(appName, nodeCmd, headersReqSchema,
-    paramNeedTobeValid = 'authorization,content-type') {
+module.exports.validateHeader = async function(appName, nodeCmd, headersReqSchema) {
   const parseErrorMulti = this.utils().submodules('parseError')
       .modules('parseErrorMulti');
   const status = this.utils().services('enum').
@@ -11,7 +10,7 @@ module.exports.validateHeader = async function(appName, nodeCmd, headersReqSchem
       modules('validate.paramsBySchema');
 
   const validateHeaderReq = validator(headersReqSchema, this.req.headers,
-      paramNeedTobeValid);
+      'authorization,content-type');
   const invalids = [validateHeaderReq.error].filter(Boolean);
   if (invalids.length > 0) {
     const errorString = parseErrorMulti(invalids);

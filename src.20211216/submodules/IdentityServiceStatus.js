@@ -1,4 +1,4 @@
-module.exports.enrollInfoRetrieve = async function(data) {
+module.exports.identityServiceStatus = async function(body) {
   const tokens = this.utils().services('tokenFunction').
       modules('tokens');
   const sendGetToken = this.utils().services('tokenFunction').
@@ -6,8 +6,8 @@ module.exports.enrollInfoRetrieve = async function(data) {
   const createHttpsAgent = this.utils().submodules('createHttpsAgent')
       .modules('createHttpsAgent');
 
-  const node = 'enrollmentInfoRetrieve';
-  const service = 'enroll';
+  const node = 'identityServiceStatus';
+  const service = 'pidp';
   const appName = this.appName;
   let accessToken = {
     tokenType: 'Bearer',
@@ -25,14 +25,6 @@ module.exports.enrollInfoRetrieve = async function(data) {
     'authorization': accessToken.tokenType + ' ' + accessToken.accessToken,
   };
 
-  const identifier = data?(data.identifier?data.identifier:
-                              this.req.body.identifier):
-                                this.req.body.identifier;
-  const body = {
-    'id_card': identifier,
-    'requester': 'AIS',
-    'info_type': 'text',
-  };
 
   const optionAttribut = {
     method: 'POST',
@@ -44,19 +36,19 @@ module.exports.enrollInfoRetrieve = async function(data) {
   Object.assign(optionAttribut,
       {httpsAgent: createHttpsAgent(service, node)});
 
-  let response = await this.utils().http().request(optionAttribut);
+  const response = await this.utils().http().request(optionAttribut);
 
   if (this.utils().http().isError(response)) {
     // await returnError(status.SYSTEM_ERROR);
     return response;
   }
   if ( (typeof response != 'string') &&
-            response.status && response.status == 401) {
+              response.status && response.status == 401) {
     this.stat(appName+' recv '+service+' '+
-          node+' error system');
+            node+' error system');
     this.summary().addErrorBlock(service, node,
         response.status, 'unauthorized');
-    response = await sendGetToken(service, response,
+    await sendGetToken(service, response,
         optionAttribut);
   }
 
@@ -66,7 +58,7 @@ module.exports.enrollInfoRetrieve = async function(data) {
 
   if (response && response.status == 200) {
     // data not founc developer_message == 20020
-    if (response.data && response.data.resultCode == '20020') {
+    if (response.data.resultCode == '20020') {
       this.stat(appName+' recv '+service+' '+node+' error not_found');
       this.summary().addErrorBlock(service, node,
           response.status, 'data_not_found');
@@ -77,9 +69,9 @@ module.exports.enrollInfoRetrieve = async function(data) {
     }
   } else if (response && response.status != 404) {
     const descError = (response.status ==401)?'unauthorized':
-      'other error';
+        'other error';
     this.stat(appName+' recv '+service+' '+
-            node+' error system');
+              node+' error system');
     this.summary().addErrorBlock(service, node,
         response.status, descError);
   } else {
@@ -89,3 +81,4 @@ module.exports.enrollInfoRetrieve = async function(data) {
   }
   return response;
 };
+

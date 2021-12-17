@@ -3,8 +3,8 @@ module.exports.NAME = async function(req, res, next) {
       schemas('req.callbackASDataSchema.headersSchema');
   const bodyReqSchema = this.utils().
       schemas('req.callbackASDataSchema.bodySchema');
-  // const validateToken = this.utils().submodules('validateToken').
-  //    modules('validateToken');
+  const validateToken = this.utils().submodules('validateToken').
+      modules('validateToken');
   const validateHeader = this.utils().submodules('validateHeader').
       modules('validateHeader');
   const validateBody = this.utils().submodules('validateBody').
@@ -22,15 +22,14 @@ module.exports.NAME = async function(req, res, next) {
 
   this.commonLog(req, nodeCmd, identity);
 
-  let responseError = await validateHeader(appName, nodeCmd, headersReqSchema,
-      'content-type');
+  let responseError = await validateHeader(appName, nodeCmd, headersReqSchema);
   if (responseError) {
-    const response = buildResponse(status.BAD_REQUEST);
-    res.status(response.status).send();
+    res.status(responseError.status).send(responseError.body);
     return;
   }
 
-  /* responseError = await validateToken(appName, nodeCmd);
+/*
+  responseError = await validateToken(appName, nodeCmd);
   if (responseError) {
     res.status(responseError.status).send(responseError.body);
     return;
@@ -38,8 +37,7 @@ module.exports.NAME = async function(req, res, next) {
 */
   responseError = await validateBody(appName, nodeCmd, bodyReqSchema);
   if (responseError) {
-    const response = buildResponse(status.BAD_REQUEST);
-    res.status(response.status).send();
+    res.status(responseError.status).send(responseError.body);
     return;
   }
 

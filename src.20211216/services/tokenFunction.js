@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable require-jsdoc */
+'use strict';
 
 const tokens = {};
 
@@ -9,7 +10,7 @@ module.exports.initGetToken = async function(service, node) {
   const configEnv = (process.env.service)?JSON.parse(process.env.service ):null;
   const configNode = configEnv[service]?configEnv[service][node]:null;
   if (configNode == null) {
-    this.debug(`config not found : service : ${service} node : ${node}`);
+    this.debug(`failed to send get token with service : ${service} node : ${node}`);
     return;
   }
   const url = configNode.conn_type +'://' + configNode.ip +
@@ -116,10 +117,9 @@ module.exports.sendRefreshToken =async function(service, result, optionAttribut)
   }
 };
 
-async function sendGetToken(service, result = null,
-    optionAttribut = null) {
-  const nodeName = 'getToken';
-  const confGetToken = this.utils().services(service)
+module.exports.sendGetToken =async function(service, result, optionAttribut) {
+  const nodeName = 'get_token';
+  const confGetToken = this.utils().services('ndid')
       .conf(nodeName);
   const tokens = this.utils().services('tokenFunction').
       modules('tokens');
@@ -134,25 +134,15 @@ async function sendGetToken(service, result = null,
     'content-type': 'application/json',
   };
 
-  try {
-    const username = confGetToken?confGetToken.name:'';
-    const pass = confGetToken?confGetToken.pass:'';
-    const auth = 'Basic ' + Buffer.from(`${username}:${pass}`).toString('base64');
-    Object.assign(headers, {
-      authorization: auth,
-    });
-  } catch (err) {
-    this.debug('error whle encode pass and user');
-  }
   const configGetToken = {
     method: 'POST',
     headers: headers,
     _service: service,
     _command: nodeName,
-    // auth: {
-    //  username: confGetToken?confGetToken.name:'',
-    //  password: confGetToken?confGetToken.pass:'',
-    // },
+    auth: {
+      username: confGetToken?confGetToken.name:'',
+      password: confGetToken?confGetToken.pass:'',
+    },
   };
   Object.assign(configGetToken,
       {httpsAgent: createHttpsAgent(service, nodeName)});
@@ -184,39 +174,15 @@ async function sendGetToken(service, result = null,
       this.debug('received error get token service : ' + service+ ', node: ' + nodeName);
       return result;
     }
-    if (optionAttribut != null) {
-      optionAttribut.headers.Authorization = tokens[service].tokenType + ' ' + tokens[service].accessToken;
-      result = await this.utils().http().request(optionAttribut);
-    }
+
+    optionAttribut.headers.Authorization = tokens[service].tokenType + ' ' + tokens[service].accessToken;
+    result = await this.utils().http().request(optionAttribut);
     return result;
   } else {
     this.stat(this.appName+' recv '+service+' '+nodeName+' error response');
     this.summary().addErrorBlock(service, nodeName,
         'error', 'error');
     return result;
-  }
-};
-
-module.exports.sendGetToken = sendGetToken;
-
-module.exports.serviceGetToken = async function() {
-  const servicesNode = ['pidp', 'enroll'];
-
-  const detaillog = this.detail('invoke', 'getToken', 'identity');
-  this.summary('invoke', 'getToken', 'identity');
-  detaillog.addInputRequest('client', 'getToken', 'invoke',
-      'rawdata', 'data', 'protokol', 'method');
-  detaillog.Input.pop();
-
-  for (let i = 0; i< servicesNode.length; i++) {
-    // const cmd = (mappingCmd[servicesNode[i]])?mappingCmd[servicesNode[i]]:
-    //              'get_token';
-    await sendGetToken.call(this, servicesNode[i]);
-
-    if (i == servicesNode.length-1) {
-      this.summary().end();
-      this.detail().end();
-    }
   }
 };
 

@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
 const Joi = require('joi');
-const {contentType} = require('../headers');
+const {contentType, authorization} = require('../headers');
 
 const headersSchema = Joi.object({
   'content-type': contentType.applicationJSON,
-  // 'authorization': authorization,
+  //'authorization': authorization,
 });
 
 const dataRequestListSchema = {

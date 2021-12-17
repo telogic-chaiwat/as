@@ -1,20 +1,20 @@
 const Joi = require('joi');
-const {contentType, authorization} = require('../headers');
+const {contentType} = require('../headers');
 
 const headersSchema = Joi.object({
   'content-type': contentType.applicationJSON,
-  //'authorization': authorization,
+  // 'authorization': authorization,
 });
 
 
 const bodySchema = Joi.object({
-  'node_id': Joi.string().optional(),
+  'node_id': Joi.string().optional().allow(''),
   'type': Joi.string().valid('error').required(),
-  'action': Joi.string().optional(),
-  'request_id': Joi.string().optional(),
+  'action': Joi.string().optional().allow(''),
+  'request_id': Joi.string().optional().allow(''),
   'error': Joi.object().keys({
-    'code': Joi.number().optional(),
-    'message': Joi.string().allow('').optional(),
+    'code': Joi.number().optional().allow(''),
+    'message': Joi.string().allow('').optional().allow(''),
   }).required(),
 });
 

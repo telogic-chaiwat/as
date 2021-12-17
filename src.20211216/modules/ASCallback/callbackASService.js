@@ -4,8 +4,8 @@ module.exports.NAME = async function(req, res, next) {
       schemas('req.callbackASServiceSchema.headersSchema');
   const bodyReqSchema = this.utils().
       schemas('req.callbackASServiceSchema.bodySchema');
-  // const validateToken = this.utils().submodules('validateToken').
-  //    modules('validateToken');
+  const validateToken = this.utils().submodules('validateToken').
+      modules('validateToken');
   const validateHeader = this.utils().submodules('validateHeader').
       modules('validateHeader');
   const validateBody = this.utils().submodules('validateBody').
@@ -40,25 +40,23 @@ module.exports.NAME = async function(req, res, next) {
     const resp = buildResponse(statusRes);
     if (res.writableFinished == false) {
       res.status(resp.status).send(resp.body);
-      await this.waitFinished();
     }
-
+    await this.waitFinished();
     this.detail().end();
     this.summary().endASync();
     return;
   };
 
-  let responseError = await validateHeader(appName, nodeCmd, headersReqSchema,
-      'content-type');
+  let responseError = await validateHeader(appName, nodeCmd, headersReqSchema);
   if (responseError) {
-    const response = buildResponse(status.BAD_REQUEST);
-    res.status(response.status).send();
+    res.status(responseError.status).send(responseError.body);
     await this.waitFinished();
     this.detail().end();
     this.summary().endASync();
     return;
   }
-  /*
+
+	/*
   responseError = await validateToken(appName, nodeCmd);
   if (responseError) {
     res.status(responseError.status).send(responseError.body);
@@ -67,11 +65,11 @@ module.exports.NAME = async function(req, res, next) {
     this.summary().endASync();
     return;
   }
-*/
+	*/
+
   responseError = await validateBody(appName, nodeCmd, bodyReqSchema);
   if (responseError) {
-    const response = buildResponse(status.BAD_REQUEST);
-    res.status(response.status).send();
+    res.status(responseError.status).send(responseError.body);
     await this.waitFinished();
     this.detail().end();
     this.summary().endASync();
@@ -152,7 +150,6 @@ module.exports.NAME = async function(req, res, next) {
 
   // NEW REQ 01-11-2021 PHASE TWO : SEND IDENTITY SERVICE STATUS
   //* * ***************** PIDP IDENTITY SERVICE STATUS 1 *********************/
-  let statusRespLast = status.SYSTEM_ERROR;
   let body = {
     'identifier': req.body.identifier,
     'requestId': req.body.request_id,
@@ -179,24 +176,24 @@ module.exports.NAME = async function(req, res, next) {
   const successResponse = buildResponse(resultNDID);
   res.status(successResponse.status).send(successResponse.body);
   await this.waitFinished();
-  statusRespLast = resultNDID;
 
   //* * ********************** Enrollment Retrieve Data ***********************/
 
   let statusUpdate = '';
   const infoRetrieve = await enrollInfoRetrieve();
   if (this.utils().http().isError(infoRetrieve)) {
-    // const transResCode = status.SYSTEM_ERROR.RESULT_CODE;
-    // const transResDesc = status.SYSTEM_ERROR.DEVELOPER_MESSAGE;
-    // this.detail().end();
-    // this.summary().endASync(null, null, transResDesc, transResCode);
+    const transResCode = status.SYSTEM_ERROR.RESULT_CODE;
+    const transResDesc = status.SYSTEM_ERROR.DEVELOPER_MESSAGE;
+    this.detail().end();
+    this.summary().endASync(null, null, transResDesc, transResCode);
     statusUpdate = 'as_fail_get_data';
-  } else if (infoRetrieve.status && infoRetrieve.status != 200 &&
-                infoRetrieve.status != 204) {
-    // const transResCode = status.SYSTEM_ERROR.RESULT_CODE;
-    // const transResDesc = status.SYSTEM_ERROR.DEVELOPER_MESSAGE;
-    // this.detail().end();
-    // this.summary().endASync(null, null, transResDesc, transResCode);
+  }
+  // eslint-disable-next-line max-len
+  if (infoRetrieve.status && infoRetrieve.status != 200 && infoRetrieve.status != 204) {
+    const transResCode = status.SYSTEM_ERROR.RESULT_CODE;
+    const transResDesc = status.SYSTEM_ERROR.DEVELOPER_MESSAGE;
+    this.detail().end();
+    this.summary().endASync(null, null, transResDesc, transResCode);
     statusUpdate = 'as_fail_get_data';
   } else {
     if (infoRetrieve.data && infoRetrieve.data.resultCode == '20020') {
@@ -218,27 +215,16 @@ module.exports.NAME = async function(req, res, next) {
   };
   checkResp = await identityServiceStatus(body);
   if (this.utils().http().isError(checkResp)) {
-    const transResCode = statusRespLast.RESULT_CODE;
-    const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
-    this.summary().endASync(null, null, transResDesc, transResCode);
+    this.summary().endASync();
     this.detail().end();
     return;
   }
   if (checkResp.status && checkResp.status != 200 && checkResp.status != 204) {
-    const transResCode = statusRespLast.RESULT_CODE;
-    const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
-    this.summary().endASync(null, null, transResDesc, transResCode);
+    this.summary().endASync();
     this.detail().end();
     return;
   }
 
-  if (statusUpdate != 'as_send_data') {
-    const transResCode = statusRespLast.RESULT_CODE;
-    const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
-    this.summary().endASync(null, null, transResDesc, transResCode);
-    this.detail().end();
-    return;
-  }
   /** ************************  ASSendDataToNDID ******************************/
   //
   let transResDesc = status.SUCCESS.RESULT_CODE;
@@ -257,20 +243,7 @@ module.exports.NAME = async function(req, res, next) {
     // callback_url: 'http://' + app_host + ':' + app_port + '/as/data',
     callback_url: callbackUrl,
     // data: mcTransactionFindOne.serviceOutputValue || '',
-    data: '',
   };
-
-  if (infoRetrieve.data && infoRetrieve.data.resultData &&
-    Array.isArray(infoRetrieve.data.resultData)) {
-    try {
-      const enrollInfoString = JSON.stringify(infoRetrieve.data.resultData[0]);
-      Object.assign(paramBody, {
-        data: enrollInfoString,
-      });
-    } catch (err) {
-      this.debug('error while stringify enrollment info');
-    }
-  }
   /*
   if (sendToErrorResponse == false) {
     paramBody = {

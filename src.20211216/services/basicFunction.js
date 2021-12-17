@@ -37,12 +37,6 @@ exports.loggingWhenWhitelist = function(req, res, options) {
   const detail = req.rodSession.detail(req.invoke, cmd, identity);
   const summary = req.rodSession.summary(req.invoke, cmd, identity);
   let rawData = null;
-
-  const logger = require('commonlog-kb');
-  if (typeof logger.writeApplogIncoming=== 'function') {
-    logger.writeApplogIncoming(this.req.sessionID, this.req);
-  }
-
   if (detail.isRawDataEnabled()) {
     rawData = Object.keys(req.body).length === 0 ? null : JSON.stringify(req.body);
   }
@@ -55,7 +49,7 @@ exports.loggingWhenWhitelist = function(req, res, options) {
         Body: Object.keys(req.body).length === 0 ? null : req.body,
       },
       req.protocol, req.method);
-  summary.addErrorBlock('as', cmd, null,
+  summary.addErrorBlock('ndid', cmd, null,
       'invalid=ip');
   req.rodSession.stat(appName+' received unknown_ip request');
   onFinished(res, function(err, res) {
@@ -80,10 +74,6 @@ exports.loggingWhenWhitelist = function(req, res, options) {
         } catch (e) {
           req.rodSession.error(e);
         }
-      }
-
-      if (typeof logger.writeApplogOutgoing === 'function') {
-        logger.writeApplogOutgoing(null, res);
       }
     }
 
