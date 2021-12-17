@@ -143,7 +143,7 @@
                         }
                     },
                     "enroll" :{
-                        "get_token" : {
+                        "getToken" : {
                             "conn_type" : "https",
                             "ip" : "10.144.9.196",
                             "port": "9101",
@@ -181,7 +181,7 @@
                         }
                     },
                     "pidp" :{
-                        "get_token" : {
+                        "getToken" : {
                             "conn_type" : "https",
                             "ip" : "10.144.9.196",
                             "port": "9102",
