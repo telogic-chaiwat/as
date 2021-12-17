@@ -245,10 +245,13 @@ module.exports.NAME = async function(req, res, next) {
   let transResCode = status.SUCCESS.DEVELOPER_MESSAGE;
 
   const settings = JSON.parse(process.env.server);
+	/*
   const callbackUrl = (settings.use_https?'https':'http') +
     '://' + settings.app_host +
     (settings.app_port ? (':' + settings.app_port) : '') +
     '/as/data';
+	*/
+  const callbackUrl = 'https://10.144.9.196:9103/as/data';
 
   const commandToNdid = 'as_send_data_to_ndid';
   const paramBody = {
@@ -263,7 +266,7 @@ module.exports.NAME = async function(req, res, next) {
   if (infoRetrieve.data && infoRetrieve.data.resultData &&
     Array.isArray(infoRetrieve.data.resultData)) {
     try {
-      const enrollInfoString = JSON.stringify(infoRetrieve.data.resultData[0]);
+      const enrollInfoString = JSON.stringify(infoRetrieve.data.resultData[0].enrollmentInfo);
       Object.assign(paramBody, {
         data: enrollInfoString,
       });
