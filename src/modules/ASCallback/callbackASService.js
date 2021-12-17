@@ -56,6 +56,7 @@ module.exports.NAME = async function(req, res, next) {
     return;
   }
 
+	/*
   responseError = await validateToken(appName, nodeCmd);
   if (responseError) {
     res.status(responseError.status).send(responseError.body);
@@ -64,6 +65,7 @@ module.exports.NAME = async function(req, res, next) {
     this.summary().endASync();
     return;
   }
+	*/
 
   responseError = await validateBody(appName, nodeCmd, bodyReqSchema);
   if (responseError) {
@@ -87,7 +89,7 @@ module.exports.NAME = async function(req, res, next) {
       'request_id': req.body.request_id,
       'citizen_id': req.body.identifier,
       'serviceName': req.body.service_id,
-      'status': 'wait_for_as',
+      'status': 'idp_response_confirm_success',
     },
     options: {
       projection: {

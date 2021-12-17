@@ -3,7 +3,7 @@ const {contentType, authorization} = require('../headers');
 
 const headersSchema = Joi.object({
   'content-type': contentType.applicationJSON,
-  'authorization': authorization,
+  //'authorization': authorization,
 });
 
 

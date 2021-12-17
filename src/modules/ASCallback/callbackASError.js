@@ -22,11 +22,13 @@ module.exports.NAME = async function(req, res, next) {
     return;
   }
 
+	/*
   responseError = await validateToken(appName, nodeCmd);
   if (responseError) {
     res.status(responseError.status).send(responseError.body);
     return;
   }
+	*/
 
   responseError = await validateBody(appName, nodeCmd, bodyReqSchema);
   if (responseError) {
