@@ -91,7 +91,7 @@ module.exports.NAME = async function(req, res, next) {
       'request_id': req.body.request_id,
       'citizen_id': req.body.identifier,
       'serviceName': req.body.service_id,
-      'status': 'idp_response_confirm_success',
+      'status': 'wait_for_as',
     },
     options: {
       projection: {
@@ -245,13 +245,10 @@ module.exports.NAME = async function(req, res, next) {
   let transResCode = status.SUCCESS.DEVELOPER_MESSAGE;
 
   const settings = JSON.parse(process.env.server);
-	/*
   const callbackUrl = (settings.use_https?'https':'http') +
     '://' + settings.app_host +
     (settings.app_port ? (':' + settings.app_port) : '') +
     '/as/data';
-	*/
-  const callbackUrl = 'https://10.144.9.196:9103/as/data';
 
   const commandToNdid = 'as_send_data_to_ndid';
   const paramBody = {
@@ -266,6 +263,7 @@ module.exports.NAME = async function(req, res, next) {
   if (infoRetrieve.data && infoRetrieve.data.resultData &&
     Array.isArray(infoRetrieve.data.resultData)) {
     try {
+      // eslint-disable-next-line max-len
       const enrollInfoString = JSON.stringify(infoRetrieve.data.resultData[0].enrollmentInfo);
       Object.assign(paramBody, {
         data: enrollInfoString,
@@ -294,6 +292,11 @@ module.exports.NAME = async function(req, res, next) {
   */
   const conf_as_data = this.utils().services('as').conf(commandToNdid);
 
+  if (conf_as_data.callback_url) {
+    Object.assign(paramBody, {
+      callback_url: conf_as_data.callback_url,
+    });
+  }
   let url_as_data = conf_as_data.conn_type + '://' + conf_as_data.ip +
     (conf_as_data.port ? (':' + conf_as_data.port) : '') + conf_as_data.path;
 
