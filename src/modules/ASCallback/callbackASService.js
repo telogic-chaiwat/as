@@ -149,6 +149,8 @@ module.exports.NAME = async function(req, res, next) {
     }
   }
   */
+ 
+  let serviceId=req.body.service_id;
 
   // NEW REQ 01-11-2021 PHASE TWO : SEND IDENTITY SERVICE STATUS
   //* * ***************** PIDP IDENTITY SERVICE STATUS 1 *********************/
@@ -264,7 +266,11 @@ module.exports.NAME = async function(req, res, next) {
     Array.isArray(infoRetrieve.data.resultData)) {
     try {
       // eslint-disable-next-line max-len
-      const enrollInfoString = JSON.stringify(infoRetrieve.data.resultData[0].enrollmentInfo);
+      let enrollInfo=infoRetrieve.data.resultData[0].enrollmentInfo;
+      if(serviceId=='001.cust_info_001') {
+	delete enrollInfo.customer_biometric;
+      }
+      const enrollInfoString = JSON.stringify(enrollInfo);
       Object.assign(paramBody, {
         data: enrollInfoString,
       });
