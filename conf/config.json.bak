@@ -29,11 +29,6 @@
                 "ctrl_name": "callbackASError",
                 "method": ["post"],
                 "url": ["/as/error"]
-            },
-            {
-                "ctrl_name": "callbackASResponse",
-                "method": ["post"],
-                "url": ["/as/response"]
             }
         ]
         
