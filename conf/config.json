@@ -34,5 +34,6 @@
         
     },
 
-    "jwtSecretKey" : "k9OT6RO230Fu6qY6lpdipU0DO6awIex9"
+    "jwtSecretKey" : "k9OT6RO230Fu6qY6lpdipU0DO6awIex9",
+    "AIS_IDP_NODE_ID" : ["F6977BA6-2525-4C86-9C1E-7ECB4B7DEE30"]
 }

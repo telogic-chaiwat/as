@@ -22,19 +22,7 @@ module.exports.NAME = async function(req, res, next) {
       .modules('enrollInfoRetrieve');
   const identityServiceStatus = this.utils().submodules('IdentityServiceStatus')
       .modules('identityServiceStatus');
-  const sendAsError = this.utils().submodules('sendAsError')
-      .modules('sendAsError');
-  const mongoInsert = this.utils().services('mongoFunction').
-      modules('insert');
-  const mongoUpdate = this.utils().services('mongoFunction').
-      modules('update');
-  const collectionName = this.utils().services('enum')
-      .modules('collectionMongo');
-  const confMongo = this.utils().services('mongo')
-      .conf('default');
-  const generateRandomString = this.utils().services('basicFunction').
-      modules('generateRandomString');
-  const AIS_IDP_NODE_ID = this.utils().app().const('AIS_IDP_NODE_ID');
+
 
   // init detail and summary log
   const appName = this.appName || 'as';
@@ -43,7 +31,7 @@ module.exports.NAME = async function(req, res, next) {
   const initInvoke = req.invoke;
   this.commonLogAsync(req, nodeCmd, identity);
 
-  /* const returnError = async (statusRes=status.SYSTEM_ERROR) =>{
+  const returnError = async (statusRes=status.SYSTEM_ERROR) =>{
     if (statusRes == status.SYSTEM_ERROR) {
       this.stat(appName+' returned '+nodeCmd+' '+'system error');
     } else {
@@ -59,7 +47,7 @@ module.exports.NAME = async function(req, res, next) {
     this.summary().endASync();
     return;
   };
-*/
+
   let responseError = await validateHeader(appName, nodeCmd, headersReqSchema,
       'content-type');
   if (responseError) {
@@ -161,7 +149,27 @@ module.exports.NAME = async function(req, res, next) {
     }
   }
   */
+ 
+  let serviceId=req.body.service_id;
 
+  // NEW REQ 01-11-2021 PHASE TWO : SEND IDENTITY SERVICE STATUS
+  //* * ***************** PIDP IDENTITY SERVICE STATUS 1 *********************/
+  let statusRespLast = status.SYSTEM_ERROR;
+  let body = {
+    'identifier': req.body.identifier,
+    'requestId': req.body.request_id,
+    'serviceId': req.body.service_id,
+    'status': 'as_prepare_data',
+  };
+  let checkResp = await identityServiceStatus(body);
+  if (this.utils().http().isError(checkResp)) {
+    await returnError(status.SYSTEM_ERROR);
+    return;
+  }
+  if (checkResp.status && checkResp.status != 200 && checkResp.status != 204) {
+    await returnError(status.SYSTEM_ERROR);
+    return;
+  }
   // SEND RESPONSE TO CLIENT 204
   const resultNDID = {
     HTTP_STATUS: 204,
@@ -175,79 +183,6 @@ module.exports.NAME = async function(req, res, next) {
   await this.waitFinished();
   statusRespLast = resultNDID;
 
-
-  // NEW REQ 10-01-2022 DOING INSERT AS_TRANSACTION
-  // eslint-disable-next-line prefer-const
-  let requestReferenceId = generateRandomString();
-  const doc = req.body;
-  Object.assign(doc, {
-    reference_id: requestReferenceId,
-    creation_time: Date.now(),
-  });
-  const optionAttributInsert = {
-    collection: collectionName.AS_TRANSACTION,
-    commandName: 'insert_as_transaction',
-    invoke: initInvoke,
-    doc: doc,
-    max_retry: confMongo.max_retry,
-    timeout: (confMongo.timeout * 1000),
-    retry_condition: confMongo.retry_condition,
-  };
-
-  const mongoResponseInsert = await mongoInsert(this, optionAttributInsert);
-  if (mongoResponseInsert && mongoResponseInsert == 'error') {
-    this.error('error insert AS Transaction');
-  }
-
-  // CHECK NODE_ID
-  let belongToAIS = false;
-  if (AIS_IDP_NODE_ID && Array.isArray(AIS_IDP_NODE_ID)) {
-    belongToAIS = AIS_IDP_NODE_ID.includes(req.body.node_id);
-  } else {
-    this.error('AIS_IDP_NODE_ID is not found in config file');
-  }
-  const serviceId = req.body.service_id;
-  // NEW REQ 01-11-2021 PHASE TWO : SEND IDENTITY SERVICE STATUS
-  //* * ***************** PIDP IDENTITY SERVICE STATUS 1 *********************/
-  if (belongToAIS) {
-    let asError = false;
-    const statusRespLast = status.SYSTEM_ERROR;
-    const body = {
-      'identifier': req.body.identifier,
-      'requestId': req.body.request_id,
-      'serviceId': req.body.service_id,
-      'status': 'as_prepare_data',
-    };
-    const checkResp = await identityServiceStatus(body);
-    if (this.utils().http().isError(checkResp)) {
-      await sendAsError({
-        reference_id: requestReferenceId,
-      });
-      asError = true;
-    }
-    // eslint-disable-next-line max-len
-    if (checkResp.status && checkResp.status != 200 && checkResp.status != 204) {
-      await sendAsError({
-        reference_id: requestReferenceId,
-      });
-      asError = true;
-    }
-
-    if (asError) {
-      const transResCode = statusRespLast.RESULT_CODE;
-      const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
-      this.summary().endASync(null, null, transResDesc, transResCode);
-      this.detail().end();
-      return;
-    }
-
-    if (checkResp.data && checkResp.data.resultData &&
-      Array.isArray(checkResp.data.resultData)) {
-      requestReferenceId = checkResp.data.resultData[0].requestReferenceId;
-    } else {
-      this.log('referenceId is not found on response from identity service');
-    }
-  }
   //* * ********************** Enrollment Retrieve Data ***********************/
 
   let statusUpdate = '';
@@ -273,67 +208,33 @@ module.exports.NAME = async function(req, res, next) {
     }
   }
 
-
-  //* * ***************** UPDATE TRANSACTION *********************/
-  const optionAttributUpdate = {
-    collection: collectionName.AS_TRANSACTION,
-    commandName: 'update_as_transaction',
-    invoke: initInvoke,
-    selector: {
-      'request_id': req.body.request_id,
-    },
-    update: {
-      $set: {
-        'status': statusUpdate,
-        'reference_id': requestReferenceId,
-      },
-    },
-    max_retry: confMongo.max_retry,
-    timeout: (confMongo.timeout * 1000),
-    retry_condition: confMongo.retry_condition,
-  };
-
-  let resultUpdate = await mongoUpdate(this, optionAttributUpdate);
-  // ERROR:update MCTransaction fail
-  if (!resultUpdate || (resultUpdate &&
-    resultUpdate == 'error')) {
-    this.error('error while update as transaction');
-  }
-
   //* * ***************** PIDP IDENTITY SERVICE STATUS 2 *********************/
-
-  if (belongToAIS) {
-    body = {
-      'requestReferenceId': requestReferenceId,
-      'status': statusUpdate,
-    };
-    checkResp = await identityServiceStatus(body);
-    if (this.utils().http().isError(checkResp)) {
-      await sendAsError({
-        reference_id: requestReferenceId,
-      });
-      const transResCode = statusRespLast.RESULT_CODE;
-      const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
-      this.summary().endASync(null, null, transResDesc, transResCode);
-      this.detail().end();
-      return;
-    }
-    // eslint-disable-next-line max-len
-    if (checkResp.status && checkResp.status != 200 && checkResp.status != 204) {
-      await sendAsError({
-        reference_id: requestReferenceId,
-      });
-      const transResCode = statusRespLast.RESULT_CODE;
-      const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
-      this.summary().endASync(null, null, transResDesc, transResCode);
-      this.detail().end();
-      return;
-    }
+  let requestReferenceId= '';
+  if (checkResp.data && checkResp.data.resultData &&
+    Array.isArray(checkResp.data.resultData)) {
+    requestReferenceId = checkResp.data.resultData[0].requestReferenceId;
   }
+  body = {
+    'requestReferenceId': requestReferenceId,
+    'status': statusUpdate,
+  };
+  checkResp = await identityServiceStatus(body);
+  if (this.utils().http().isError(checkResp)) {
+    const transResCode = statusRespLast.RESULT_CODE;
+    const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
+    this.summary().endASync(null, null, transResDesc, transResCode);
+    this.detail().end();
+    return;
+  }
+  if (checkResp.status && checkResp.status != 200 && checkResp.status != 204) {
+    const transResCode = statusRespLast.RESULT_CODE;
+    const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
+    this.summary().endASync(null, null, transResDesc, transResCode);
+    this.detail().end();
+    return;
+  }
+
   if (statusUpdate != 'as_send_data') {
-    await sendAsError({
-      reference_id: requestReferenceId,
-    });
     const transResCode = statusRespLast.RESULT_CODE;
     const transResDesc = statusRespLast.DEVELOPER_MESSAGE;
     this.summary().endASync(null, null, transResDesc, transResCode);
@@ -364,11 +265,11 @@ module.exports.NAME = async function(req, res, next) {
   if (infoRetrieve.data && infoRetrieve.data.resultData &&
     Array.isArray(infoRetrieve.data.resultData)) {
     try {
-      const enrollInfo = infoRetrieve.data.resultData[0].enrollmentInfo;
-      if (serviceId == '001.cust_info_001') {
-        delete enrollInfo.customer_biometric;
-      }
       // eslint-disable-next-line max-len
+      let enrollInfo=infoRetrieve.data.resultData[0].enrollmentInfo;
+      if(serviceId=='001.cust_info_001') {
+	delete enrollInfo.customer_biometric;
+      }
       const enrollInfoString = JSON.stringify(enrollInfo);
       Object.assign(paramBody, {
         data: enrollInfoString,
@@ -440,7 +341,6 @@ module.exports.NAME = async function(req, res, next) {
     this.stat(appName + ' transaction ' + nodeCmd + ' system error');
     // isUpdateSuccess = false
   } else if (response.status != 202) {
-    this.log('send data to NDID received status : ' + response.status);
     transResCode = status.SYSTEM_ERROR.RESULT_CODE;
     transResDesc = status.SYSTEM_ERROR.DEVELOPER_MESSAGE;
 
@@ -466,31 +366,13 @@ module.exports.NAME = async function(req, res, next) {
     return;
   }
 
-  const statusFailed = 'as_fail_send_data';
-  //* * ***************** UPDATE TRANSACTION 2 *********************/
-  optionAttributUpdate['update']['$set'] = {
-    status: statusFailed,
-  };
-  resultUpdate = await mongoUpdate(this, optionAttributUpdate);
-  // ERROR:update MCTransaction fail
-  if (!resultUpdate || (resultUpdate &&
-    resultUpdate == 'error')) {
-    this.error('error while update as transaction');
-  }
-
   // Failed to send as data to NDID
   //* * ***************** PIDP IDENTITY SERVICE STATUS 3 *********************/
-  if (belongToAIS) {
-    body = {
-      'requestReferenceId': requestReferenceId,
-      'status': statusFailed,
-    };
-    checkResp = await identityServiceStatus(body);
-  }
-
-  await sendAsError({
-    reference_id: requestReferenceId,
-  });
+  body = {
+    'requestReferenceId': requestReferenceId,
+    'status': 'as_fail_send_data',
+  };
+  checkResp = await identityServiceStatus(body);
   this.stat(appName + ' transaction ' + nodeCmd + ' system error');
   this.detail().end();
   this.summary().endASync(null, null, transResDesc, transResCode);

@@ -29,16 +29,6 @@ const randomstring = (index, appLog) => {
   return randomstring.generate(index);
 };
 
-exports.generateRandomString = () =>{
-  const length = Math.random() * (99 - 1) + 1;
-  const randomstring = require('randomstring');
-  const possibleValue = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  return randomstring.generate({
-    length: length,
-    charset: possibleValue,
-  });
-};
-
 exports.loggingWhenWhitelist = function(req, res, options) {
   const onFinished = require('on-finished');
   const appName = 'as';

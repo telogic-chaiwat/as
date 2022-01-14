@@ -15,28 +15,18 @@ module.exports.NAME = async function(req, res, next) {
       .modules('buildResponse');
   const identityServiceStatus = this.utils().submodules('IdentityServiceStatus')
       .modules('identityServiceStatus');
-  const mongoUpdate = this.utils().services('mongoFunction').
-      modules('update');
-  const collectionName = this.utils().services('enum')
-      .modules('collectionMongo');
-  const confMongo = this.utils().services('mongo')
-      .conf('default');
-  const AIS_IDP_NODE_ID = this.utils().app().const('AIS_IDP_NODE_ID');
 
   const appName = this.appName || 'publicIdp';
   const nodeCmd = 'callback_as_response';
   const identity = req.body.reference_id || '';
-  const initInvoke = req.invoke;
-  this.commonLogAsync(req, nodeCmd, identity);
+
+  this.commonLog(req, nodeCmd, identity);
 
   let responseError = await validateHeader(appName, nodeCmd, headersReqSchema,
       'content-type');
   if (responseError) {
     const response = buildResponse(status.BAD_REQUEST);
     res.status(response.status).send();
-    await this.waitFinished();
-    this.detail().end();
-    this.summary().endASync();
     return;
   }
 
@@ -50,70 +40,29 @@ module.exports.NAME = async function(req, res, next) {
   if (responseError) {
     const response = buildResponse(status.BAD_REQUEST);
     res.status(response.status).send();
-    await this.waitFinished();
-    this.detail().end();
-    this.summary().endASync();
     return;
   }
 
   this.stat(appName+' received '+nodeCmd+' request');
   this.summary().addSuccessBlock('client', nodeCmd, null, 'success');
-  res.status(204).send();
-  this.stat(appName+' returned '+nodeCmd+' '+'success');
-  await this.waitFinished();
 
-  let belongToAIS = false;
-  if (AIS_IDP_NODE_ID && Array.isArray(AIS_IDP_NODE_ID)) {
-    belongToAIS = AIS_IDP_NODE_ID.includes(req.body.node_id);
-  } else {
-    this.error('AIS_IDP_NODE_ID is not found in config file');
-  }
-  // UPDATE TRANSACTION
-  const optionAttributUpdate = {
-    collection: collectionName.AS_TRANSACTION,
-    commandName: 'update_as_transaction',
-    invoke: initInvoke,
-    selector: {
-      'reference_id': req.body.reference_id,
-    },
-    update: {
-      $set: {
-        'status': 'as_completed',
-      },
-    },
-    max_retry: confMongo.max_retry,
-    timeout: (confMongo.timeout * 1000),
-    retry_condition: confMongo.retry_condition,
+  body = {
+    'requestReferenceId': req.body.reference_id,
+    'status': 'as_completed',
   };
-
-  const resultUpdate = await mongoUpdate(this, optionAttributUpdate);
-  // ERROR:update MCTransaction fail
-  if (!resultUpdate || (resultUpdate &&
-    resultUpdate == 'error')) {
-    this.error('error while update as transaction');
-    this.detail().end();
-    this.summary().endASync();
+  checkResp = await identityServiceStatus(body);
+  if (this.utils().http().isError(checkResp)) {
+    this.stat(appName+' returned '+nodeCmd+' '+'system error');
+    const resp = buildResponse(status.SYSTEM_ERROR);
+    res.status(resp.status).send();
     return;
   }
-
-  // SEND TO SERVICE STATUS
-  if (belongToAIS) {
-    body = {
-      'requestReferenceId': req.body.reference_id,
-      'status': 'as_completed',
-    };
-    checkResp = await identityServiceStatus(body);
-    /* if (this.utils().http().isError(checkResp)) {
-      return;
-    }
-    // eslint-disable-next-line max-len
-    if (checkResp.status && checkResp.status != 200 && checkResp.status!= 204) {
-      return;
-    }*/
+  if (checkResp.status && checkResp.status != 200 && checkResp.status != 204) {
+    this.stat(appName+' returned '+nodeCmd+' '+'system error');
+    const resp = buildResponse(status.SYSTEM_ERROR);
+    res.status(resp.status).send();
+    return;
   }
-  this.detail().end();
-  this.summary().endASync();
-
   /*
   const newStatus = (req.body.success)?'completed':'fail';
   const optionAttributUpdate = {
@@ -145,6 +94,8 @@ module.exports.NAME = async function(req, res, next) {
     return;
   }
   */
+  res.status(204).send();
+  this.stat(appName+' returned '+nodeCmd+' '+'success');
 };
 
 

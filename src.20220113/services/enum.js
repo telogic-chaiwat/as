@@ -60,6 +60,5 @@ module.exports.collectionMongo = Object.freeze({
   CREDENTIAL: 'credential',
   IDENTITY_REQUEST: 'identity_request',
   TRANSACTION: 'pidp_transaction',
-  AS_TRANSACTION: 'as_transaction',
 });
 
