@@ -141,6 +141,22 @@
                                 "cert" : null
                             },
 			    "callback_url" : "https://10.144.9.196:9103/as/data"
+                        },
+			"as_error": {
+				"conn_type": "http",
+				"ip": "10.144.9.196",
+				"port": "8081",
+				"path": "/as/error/:request_id/:service_id",
+				"max_retry": 0,
+				"timeout": 1,
+                            "retry_condition": "TIMEOUT|CONNECTION_ERROR",
+                            "ca-cert" : null,
+                            "rejectUnauthorized" : false,
+                            "clientCert" :{
+                                "key" : null,
+                                "cert" : null
+                            },
+			    "callback_url" : "https://10.144.9.196:9103/as/error"
                         }
                     },
                     "enroll" :{
