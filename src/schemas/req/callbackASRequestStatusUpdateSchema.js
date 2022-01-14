@@ -45,7 +45,7 @@ const bodySchema = Joi.object({
   request_timeout: Joi.number().required(),
   closed: Joi.boolean().required(),
   timed_out: Joi.boolean().required(),
-  status: Joi.string().valid('pending', 'confirmed', 'rejected', 'completed', 'complicated').required(),
+  status: Joi.string().valid('pending', 'confirmed', 'rejected', 'completed', 'complicated','errored').required(),
   block_height: Joi.string().required(),
 });
 
