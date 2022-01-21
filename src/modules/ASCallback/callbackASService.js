@@ -396,7 +396,9 @@ module.exports.NAME = async function(req, res, next) {
   }
   */
 
-  await new Promise(resolve => setTimeout(resolve, 300000));
+
+  //await new Promise(resolve => setTimeout(resolve, 300000)); // for test delay
+
   const conf_as_data = this.utils().services('as').conf(commandToNdid);
 
   if (conf_as_data.callback_url) {
