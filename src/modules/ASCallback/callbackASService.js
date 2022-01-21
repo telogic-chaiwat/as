@@ -395,6 +395,8 @@ module.exports.NAME = async function(req, res, next) {
     commandToNdid = 'as_send_error_to_ndid';
   }
   */
+
+  await new Promise(resolve => setTimeout(resolve, 300000));
   const conf_as_data = this.utils().services('as').conf(commandToNdid);
 
   if (conf_as_data.callback_url) {
