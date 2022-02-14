@@ -365,7 +365,7 @@ module.exports.NAME = async function(req, res, next) {
     Array.isArray(infoRetrieve.data.resultData)) {
     try {
       const enrollInfo = infoRetrieve.data.resultData[0].enrollmentInfo;
-      if (serviceId == '001.cust_info_001') {
+      if (serviceId == '001.cust_info_002') {
         delete enrollInfo.customer_biometric;
       }
       // eslint-disable-next-line max-len
