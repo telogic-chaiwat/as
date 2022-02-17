@@ -368,6 +368,17 @@ module.exports.NAME = async function(req, res, next) {
       if (serviceId == '001.cust_info_002') {
         delete enrollInfo.customer_biometric;
       }
+      //Modify cust_creted_date
+      if(enrollInfo.cust_created_date) {
+	      let new_cust_created_date='<3';
+	      let diffCustTime=((new Date().getTime())-(new Date(enrollInfo.cust_created_date+""Z+0700").getTime()))/1000/86400;
+	      if(!isNaN(diffCustTime)) {
+	      	if(diffCustTime>3) new_cust_created_date='>3';
+	      }
+	      enrollInfo.cust_created_date=new_cust_created_date;
+      } else {
+	      enrollInfo.cust_created_date='<3';
+      }
       // eslint-disable-next-line max-len
       const enrollInfoString = JSON.stringify(enrollInfo);
       Object.assign(paramBody, {
